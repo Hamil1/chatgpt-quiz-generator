@@ -1,4 +1,6 @@
 require("colors");
+require("dotenv").config();
+const { Configuration, OpenAIApi } = require("openai");
 const {
   inquirerMenu,
   pause,
@@ -6,9 +8,20 @@ const {
   listadoTareasBorrar,
   confirmar,
   mostrarListadoChecklist,
-} = require("./helpers/inquirer");
-const { guardarDB, leerDB } = require("./helpers/guardarArchivo");
+  ChatGPTQuestionsMenu,
+  leerDB,
+  completion,
+  completionJSON,
+  removeSimilarStrings,
+} = require("./helpers");
 const Tareas = require("./models/tareas");
+
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+const openai = new OpenAIApi(configuration);
+
+let questions = [];
 
 const main = async () => {
   let opt = "";
@@ -26,38 +39,53 @@ const main = async () => {
     opt = await inquirerMenu();
     switch (opt) {
       case "1":
-        //crear opcion
-        const desc = await leerInput("Descripcion: ");
-        tareas.crearTarea(desc);
+        console.clear();
+        // const opt = await leerInput(
+        //   `How can I ${"help".green} you? (If you want to ${
+        //     "exit".red
+        //   } press 0): \n`
+        // );
+        const opt =
+          'generate a quiz for a reactjs senior interview in a json array using this format [""]';
+        await Promise.all([
+          completionJSON(openai, opt),
+          completionJSON(openai, opt),
+          completionJSON(openai, opt),
+        ])
+          .then(async (response) => {
+            console.clear();
+            const flatArray = removeSimilarStrings(response.flat());
+            //resetting questions array
+            questions = [];
+            flatArray.forEach((item, index) => {
+              questions.push({
+                value: item,
+                name: `${index + 1} ${item}`,
+              });
+            });
+            if (questions.length > 0) {
+              console.log(`Quiz ${"generated".blue}!`);
+            }
+          })
+          .catch((error) => console.error(error));
+
         break;
 
       case "2":
-        tareas.listadoCompleto();
-        break;
-
-      case "3":
-        tareas.listarPendientesCompletadas(true);
-        break;
-
-      case "4":
-        tareas.listarPendientesCompletadas(false);
-        break;
-
-      case "5":
-        const ids = await mostrarListadoChecklist(tareas.listadoArr);
-        tareas.toggleCompletadas(ids);
-        break;
-
-      case "6":
-        const id = await listadoTareasBorrar(tareas.listadoArr);
-        if (id !== "0") {
-          const ok = await confirmar("Estas seguro?");
-          if (ok) {
-            tareas.borrarTarea(id);
-            console.log("Tarea borrada");
-          }
-        }
-
+        //providing inquirer type list object a default value in case questions array is empty
+        const quiz = [
+          {
+            type: "list",
+            name: "question",
+            message: `Please select the question to see it's ${
+              "answer".green
+            }\n`,
+            choices: questions,
+          },
+        ];
+        const question = await ChatGPTQuestionsMenu(quiz);
+        const answer = await completion(openai, question);
+        console.log(answer);
         break;
     }
 

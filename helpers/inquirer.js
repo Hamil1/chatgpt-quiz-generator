@@ -5,35 +5,19 @@ const preguntas = [
   {
     type: "list",
     name: "opcion",
-    message: "Que desea hacer?",
+    message: "How can I help you? ",
     choices: [
       {
         value: "1",
-        name: `${"1.".green} Crear tarea`,
+        name: `${"1.".green} ${"ChatGPT:".yellow} Generate a new Quiz 🆕`,
       },
       {
         value: "2",
-        name: `${"2.".green} Listar tareas`,
-      },
-      {
-        value: "3",
-        name: `${"3.".green} Listar tareas completadas`,
-      },
-      {
-        value: "4",
-        name: `${"4.".green} Listar tareas pendientes`,
-      },
-      {
-        value: "5",
-        name: `${"5.".green} Completar tarea(s)`,
-      },
-      {
-        value: "6",
-        name: `${"6.".green} Borrar tarea`,
+        name: `${"2.".green} See current Quiz 📝`,
       },
       {
         value: "0",
-        name: `${"0.".green} Salir`,
+        name: `${"0.".green} Exit 👋`,
       },
     ],
   },
@@ -42,7 +26,7 @@ const preguntas = [
 const inquirerMenu = async () => {
   console.clear();
   console.log("===================================".green);
-  console.log(" Seleccione una opcion".white);
+  console.log("Hi! I'm your AI Assistant 🤖".white);
   console.log("===================================\n".green);
 
   const { opcion } = await inquirer.prompt(preguntas);
@@ -50,12 +34,22 @@ const inquirerMenu = async () => {
   return opcion;
 };
 
+const ChatGPTQuestionsMenu = async (questions) => {
+  console.clear();
+  console.log("===================================".green);
+  console.log("Select one question to see it's answer:".white);
+  console.log("===================================\n".green);
+
+  const { question } = await inquirer.prompt(questions);
+  return question;
+};
+
 const pause = async () => {
   const options = [
     {
       type: "input",
       name: "enter",
-      message: `\nPresione ${"ENTER".green} para continuar\n`,
+      message: `\nPress ${"ENTER".green} ENTER to continue\n`,
     },
   ];
 
@@ -147,4 +141,5 @@ module.exports = {
   listadoTareasBorrar,
   confirmar,
   mostrarListadoChecklist,
+  ChatGPTQuestionsMenu,
 };
